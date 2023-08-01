@@ -47,7 +47,7 @@ def prep_model(choice, _qa_prompt, _doc_prompt, _db):
                 reduce_k_below_max_tokens=True, return_source_documents=True,
                 memory=memory
             )
-            return qa, memory      
+    
     else:
         hat = st.text_input('Input HuggingFace API Key')
         if hat != '':
@@ -66,7 +66,7 @@ def prep_model(choice, _qa_prompt, _doc_prompt, _db):
                 reduce_k_below_max_tokens=True, return_source_documents=True,
                 memory=memory
             )
-            return qa, memory
+    return qa, memory
 
 hf = prep_embeddings()
 uploaded_files = st.file_uploader("Choose some PDFs to upload", accept_multiple_files=True)
