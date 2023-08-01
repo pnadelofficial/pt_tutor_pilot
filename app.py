@@ -47,7 +47,6 @@ def prep_model(choice, _qa_prompt, _doc_prompt, _db):
                 reduce_k_below_max_tokens=True, return_source_documents=True,
                 memory=memory
             )
-    
     else:
         hat = st.text_input('Input HuggingFace API Key')
         if hat != '':
