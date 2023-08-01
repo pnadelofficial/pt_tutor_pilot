@@ -180,3 +180,6 @@ if st.button('Reset chat'):
     st.session_state.messages = []
     memory = ConversationBufferMemory()
     st.experimental_rerun()
+
+if st.button('Clear all'):
+    st.cache_resource.clear()
