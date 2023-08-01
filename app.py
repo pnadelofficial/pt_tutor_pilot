@@ -185,4 +185,3 @@ if st.button('Clear all'):
     st.cache_resource.clear()
     st.session_state.messages = []
     memory = ConversationBufferMemory()
-    uploaded_files = []
