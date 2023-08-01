@@ -4,4 +4,5 @@ streamlit==1.24.0
 sentence_transformers
 chromadb==0.3.29
 pysqlite3-binary
+openai
 pypdf
