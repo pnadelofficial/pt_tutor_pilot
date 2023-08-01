@@ -138,12 +138,8 @@ doc_prompt = PromptTemplate(
     input_variables=["page_content", "source"]
 )
 
-if (template != ''):
-    if uploaded_files:
-        db = Chroma.from_documents(texts, hf)        
-    else:
-        db = Chroma(persist_directory='./p_db', embedding_function=hf)
-    qa, memory = prep_model(choice, qa_prompt, doc_prompt, db)
+db = Chroma.from_documents(texts, hf)        
+qa, memory = prep_model(choice, qa_prompt, doc_prompt, db)
 
 def clean_cite(text):
     text = re.sub('\d+\:\d+\:\d+','',text)
