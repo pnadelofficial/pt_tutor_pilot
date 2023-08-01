@@ -144,9 +144,7 @@ if (template != ''):
         db = Chroma.from_documents(texts, hf)        
     else:
         db = Chroma(persist_directory='./p_db', embedding_function=hf)
-    res = prep_model(choice, qa_prompt, doc_prompt, db)
-    if res is not None:
-        qa, memory = res
+    qa, memory = prep_model(choice, qa_prompt, doc_prompt, db)
 
 def clean_cite(text):
     text = re.sub('\d+\:\d+\:\d+','',text)
