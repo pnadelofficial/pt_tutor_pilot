@@ -138,7 +138,11 @@ doc_prompt = PromptTemplate(
     input_variables=["page_content", "source"]
 )
 
-db = Chroma.from_documents(texts, hf)        
+@st.cache_resource
+def embed_docs():
+    db = Chroma.from_documents(texts, hf)  
+    return db
+db = embed_docs()      
 qa, memory = prep_model(choice, qa_prompt, doc_prompt, db)
 
 def clean_cite(text):
