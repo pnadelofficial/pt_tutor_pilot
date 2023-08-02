@@ -138,7 +138,7 @@ doc_prompt = PromptTemplate(
     input_variables=["page_content", "source"]
 )
 
-@st.cache_resource
+@st.cache_data
 def embed_docs():
     db = Chroma.from_documents(texts, hf)  
     return db
@@ -185,3 +185,53 @@ if st.button('Clear all'):
     st.cache_resource.clear()
     st.session_state.messages = []
     memory = ConversationBufferMemory()
+
+def traceback_include_filter(patterns, tracebackList):
+    """
+    Returns True if any provided pattern exists in the filename of the traceback,
+    Returns False otherwise.
+    """
+    for t in tracebackList:
+        for p in patterns:
+            if p in t.filename:
+                return True
+    return False
+
+
+def check_for_leaks(diff):
+    """
+    Checks if the same traceback appears consistently after multiple runs.
+
+    diff - The object returned by tracemalloc#snapshot.compare_to
+    """
+    _TRACES["runs"] = _TRACES["runs"] + 1
+    tracebacks = set()
+
+    for sd in diff:
+        for t in sd.traceback:
+            tracebacks.add(t)
+
+    if "tracebacks" not in _TRACES or len(_TRACES["tracebacks"]) == 0:
+        for t in tracebacks:
+            _TRACES["tracebacks"][t] = 1
+    else:
+        oldTracebacks = _TRACES["tracebacks"].keys()
+        intersection = tracebacks.intersection(oldTracebacks)
+        evictions = set()
+        for t in _TRACES["tracebacks"]:
+            if t not in intersection:
+                evictions.add(t)
+            else:
+                _TRACES["tracebacks"][t] = _TRACES["tracebacks"][t] + 1
+
+        for t in evictions:
+            del _TRACES["tracebacks"][t]
+
+    if _TRACES["runs"] > 1:
+        st.write(f'After {_TRACES["runs"]} runs the following traces were collected.')
+        prettyPrint = {}
+        for t in _TRACES["tracebacks"]:
+            prettyPrint[str(t)] = _TRACES["tracebacks"][t]
+        st.write(json.dumps(prettyPrint, sort_keys=True, indent=4))
+
+
