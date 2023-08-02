@@ -138,7 +138,7 @@ doc_prompt = PromptTemplate(
     input_variables=["page_content", "source"]
 )
 
-@st.cache_data
+@st.cache_resource
 def embed_docs():
     db = Chroma.from_documents(texts, hf)  
     return db
