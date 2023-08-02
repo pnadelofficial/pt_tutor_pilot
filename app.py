@@ -17,6 +17,7 @@ from langchain.chains.qa_with_sources.loading import load_qa_with_sources_chain
 from langchain.document_loaders import DataFrameLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from io import BytesIO
+import gc
 
 st.title('Tufts Physical Therapy AI Tutor')
 
@@ -89,6 +90,12 @@ if uploaded_files:
     for i, text in enumerate(texts):
         if "source" not in text.metadata:
             text.metadata["source"] = f"{i}-pl"
+
+if st.button('Clear all'):
+    st.cache_resource.clear()
+    st.session_state.messages = []
+    memory = ConversationBufferMemory()
+    gc.collect()    
 
 choice = st.selectbox("What model would you like to use?", ["GPT3.5", "Falcon 7B", "Claude2 (TBD)"])
 template = st.text_area("System Prompt",
@@ -181,7 +188,4 @@ if st.button('Reset chat'):
     memory = ConversationBufferMemory()
     st.experimental_rerun()
 
-if st.button('Clear all'):
-    st.cache_resource.clear()
-    st.session_state.messages = []
-    memory = ConversationBufferMemory()
+
