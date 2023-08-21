@@ -24,7 +24,7 @@ def prep_embeddings():
 @st.cache_resource(experimental_allow_widgets=True)
 def prep_model(choice, _doc_prompt, _db):
     if choice.startswith('GPT'):
-        oak = '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' # st.text_input('Input OpenAI API Key')
+        oak = 'hhhhh' # st.text_input('Input OpenAI API Key')
         if oak != '':
             llm = ChatOpenAI(temperature=0, model_name='gpt-3.5-turbo-16k-0613', openai_api_key=oak) 
             qa_chain = load_qa_with_sources_chain(
