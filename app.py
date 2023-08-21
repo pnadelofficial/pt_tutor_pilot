@@ -21,22 +21,20 @@ def prep_embeddings():
     )
     return hf
 
-@st.cache_resource(experimental_allow_widgets=True)
+@st.cache_resource
 def prep_model(choice, _doc_prompt, _db):
     if choice.startswith('GPT'):
-        oak = 'hhhhh' # st.text_input('Input OpenAI API Key')
-        if oak != '':
-            llm = ChatOpenAI(temperature=0, model_name='gpt-3.5-turbo-16k-0613', openai_api_key=oak) 
-            qa_chain = load_qa_with_sources_chain(
-                llm, chain_type='stuff',
-                document_prompt=_doc_prompt
-            )
-            memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True, input_key='question', output_key='answer')
-            qa = RetrievalQAWithSourcesChain(
-                combine_documents_chain=qa_chain, retriever=_db.as_retriever(),
-                reduce_k_below_max_tokens=True, return_source_documents=True,
-                memory=memory
-            )
+        llm = ChatOpenAI(temperature=0, model_name='gpt-3.5-turbo-16k-0613', openai_api_key=oak) 
+        qa_chain = load_qa_with_sources_chain(
+            llm, chain_type='stuff',
+            document_prompt=_doc_prompt
+        )
+        memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True, input_key='question', output_key='answer')
+        qa = RetrievalQAWithSourcesChain(
+            combine_documents_chain=qa_chain, retriever=_db.as_retriever(),
+            reduce_k_below_max_tokens=True, return_source_documents=True,
+            memory=memory
+        )
     else:
         hat = st.text_input('Input HuggingFace API Key')
         if hat != '':
@@ -71,7 +69,11 @@ def format_names(name):
 
 db_choice = st.selectbox("What week's material would you like to search?", ['pt_example_db'], format_func=format_names)
 db = FAISS.load_local(db_choice, hf)
-qa, memory = prep_model(model_choice, doc_prompt, db)
+
+oak = st.text_input('Input OpenAI API Key') 
+if oak != '':
+    st.success('Key entered!')
+    qa, memory = prep_model(model_choice, doc_prompt, db)
 
 def clean_cite(text):
     text = re.sub('\d+\:\d+\:\d+','',text)
