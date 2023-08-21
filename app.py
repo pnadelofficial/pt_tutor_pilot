@@ -16,7 +16,6 @@ st.title('Tufts Physical Therapy AI Tutor')
 def prep_embeddings():
     hf= HuggingFaceBgeEmbeddings(
         model_name="BAAI/bge-large-en",
-        model_kwargs= {'device': 'mps'}, # does this work?
         encode_kwargs={'normalize_embeddings': True}
     )
     return hf
