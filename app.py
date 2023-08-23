@@ -9,6 +9,7 @@ from langchain.chat_models import ChatOpenAI
 from langchain.chains import RetrievalQAWithSourcesChain
 from langchain.prompts import PromptTemplate
 from langchain.chains.qa_with_sources.loading import load_qa_with_sources_chain
+import os
 
 st.title('Tufts Physical Therapy AI Tutor')
 
@@ -64,10 +65,10 @@ def format_names(name):
     if name == 'pt_example_db':
         return 'PT Example DB'
     else:
-        return name.replace('_', ' ').title()
+        return name.replace('_', ' ').title().replace('Db', 'DB')
 
-db_choice = st.selectbox("What week's material would you like to search?", ['pt_example_db'], format_func=format_names)
-db = FAISS.load_local(db_choice, hf)
+db_choice = st.selectbox("What week's material would you like to search?", os.listdir('./dbs'), format_func=format_names)
+db = FAISS.load_local(f'dbs/{db_choice}', hf)
 
 oak = st.text_input('Input OpenAI API Key') 
 if oak != '':
