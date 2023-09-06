@@ -11,6 +11,7 @@ from langchain.prompts import PromptTemplate
 from langchain.chains.qa_with_sources.loading import load_qa_with_sources_chain
 import os
 from prompts import *
+import random
 
 st.title('Tufts Physical Therapy AI Tutor')
 
@@ -139,17 +140,17 @@ with st.sidebar:
     st.write('\nRemember to give us feedback!\n')
     with st.form("student_feedback"):
         st.write("Feedback")
-        name = st.text_input("Enter your name")
         likert1 = st.slider("Ease of use", min_value=0, max_value=5, value=3)
         likert2 = st.slider("Accuracy", min_value=0, max_value=5, value=3)
         likert3 = st.slider("Overall", min_value=0, max_value=5, value=3)
         
         submitted = st.form_submit_button("Submit")
         if submitted:
-            with open(f"./feedback/{name}_feedback.csv", "w") as f:
-                f.write(f"Name, Ease of use, Accuracy, Overall\n")
-                f.write(f"{name}, {likert1}, {likert2}, {likert3}\n")
+            id = f"{len(os.listdir('./feedback'))}_{random.randint(10_000, 20_000)}"
+            with open(f"./feedback/{id}_feedback.csv", "w") as f:
+                f.write(f"ID, Ease of use, Accuracy, Overall\n")
+                f.write(f"{id}, {likert1}, {likert2}, {likert3}\n")
             
-        if os.path.exists(f"./feedback/{name}_feedback.csv"):
-            df = pd.read_csv(f"./feedback/{name}_feedback.csv")
+        if os.path.exists(f"./feedback/{id}_feedback.csv"):
+            df = pd.read_csv(f"./feedback/{id}_feedback.csv")
             st.dataframe(df)
