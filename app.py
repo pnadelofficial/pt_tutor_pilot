@@ -74,8 +74,9 @@ db_choice = st.selectbox("What week's material would you like to search?", os.li
 db = FAISS.load_local(f'dbs/{db_choice}', hf)
 
 template_radio = st.radio(
-    "What systemp rompt would you like to use",
-    ["Default LangChain prompt", "Use my own"]
+    "What system prompt would you like to use",
+    ["Default LangChain prompt", "Use my own"],
+    help='Test help string'
 )
 
 if template_radio == "Default LangChain prompt":
@@ -86,7 +87,6 @@ else:
     qa_prompt = PromptTemplate.from_template(template)
     
 with st.sidebar:
-    
     oak = st.text_input('Input OpenAI API Key') 
 
 if oak != '':
