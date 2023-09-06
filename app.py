@@ -146,6 +146,7 @@ with st.sidebar:
         
         submitted = st.form_submit_button("Submit")
         if submitted:
+            os.makedirs('./feedback', exist_ok=True)
             id = f"{len(os.listdir('./feedback'))}_{random.randint(10_000, 20_000)}"
             with open(f"./feedback/{id}_feedback.csv", "w") as f:
                 f.write(f"ID, Ease of use, Accuracy, Overall\n")
