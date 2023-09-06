@@ -10,6 +10,7 @@ from langchain.chains import RetrievalQAWithSourcesChain
 from langchain.prompts import PromptTemplate
 from langchain.chains.qa_with_sources.loading import load_qa_with_sources_chain
 import os
+from prompts import *
 
 st.title('Tufts Physical Therapy AI Tutor')
 
@@ -22,11 +23,12 @@ def prep_embeddings():
     return hf
 
 @st.cache_resource
-def prep_model(choice, _doc_prompt, _db):
+def prep_model(choice, _qa_prompt, _doc_prompt, _db):
     if choice.startswith('GPT'):
         llm = ChatOpenAI(temperature=0, model_name='gpt-3.5-turbo-16k-0613', openai_api_key=oak) 
         qa_chain = load_qa_with_sources_chain(
             llm, chain_type='stuff',
+            prompt=_qa_prompt,
             document_prompt=_doc_prompt
         )
         memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True, input_key='question', output_key='answer')
@@ -70,10 +72,25 @@ def format_names(name):
 db_choice = st.selectbox("What week's material would you like to search?", os.listdir('./dbs'), format_func=format_names)
 db = FAISS.load_local(f'dbs/{db_choice}', hf)
 
-oak = st.text_input('Input OpenAI API Key') 
+template_radio = st.radio(
+    "What systemp rompt would you like to use",
+    ["Default LangChain prompt", "Use my own"]
+)
+
+if template_radio == "Default LangChain prompt":
+    template = st.text_area("System Prompt", LANGCHAIN_DEFAULT_QA)
+    qa_prompt = PromptTemplate.from_template(template)
+else:
+    template = st.text_area("System Prompt")
+    qa_prompt = PromptTemplate.from_template(template)
+    
+with st.sidebar:
+    
+    oak = st.text_input('Input OpenAI API Key') 
+
 if oak != '':
     st.success('Key entered!')
-    qa, memory = prep_model(model_choice, doc_prompt, db)
+    qa, memory = prep_model(model_choice, qa_prompt, doc_prompt, db)
 
 def clean_cite(text):
     text = re.sub('\d+\:\d+\:\d+','',text)
@@ -97,16 +114,42 @@ if question := st.chat_input("What is up?"):
             result = qa({"question":question, "chat_history":memory.chat_memory})
         response = result['answer']
         cites = result['source_documents']
-        st.markdown(response, unsafe_allow_html=True)
-        cite_df = pd.DataFrame(cites)
-        cites_meta = list(zip(list(c[1] for c in cite_df.drop_duplicates(subset=0)[0]), list(c[1] for c in cite_df.drop_duplicates(subset=0)[1])))
-        st.markdown("**Citations**")
-        for cite in cites_meta:
-            st.markdown(f"*{cite[1]['source'].split('.pdf')[0]}*") #, page {cite[1]['page']+1}
-            st.markdown(clean_cite(cite[0]), unsafe_allow_html=True)             
+
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.markdown(response, unsafe_allow_html=True)
+
+        with col2: 
+            with st.expander("**Citations**"):
+                cite_df = pd.DataFrame(cites)
+                cites_meta = list(zip(list(c[1] for c in cite_df.drop_duplicates(subset=0)[0]), list(c[1] for c in cite_df.drop_duplicates(subset=0)[1])))
+                for cite in cites_meta:
+                    st.markdown(f"*{cite[1]['source'].split('.pdf')[0]}*")
+                    st.markdown(clean_cite(cite[0]), unsafe_allow_html=True)             
     st.session_state.messages.append({"role": "assistant", "content": response})
 
 if st.button('Reset chat'):
     st.session_state.messages = []
     memory = ConversationBufferMemory()
     st.experimental_rerun()
+
+with st.sidebar:
+    st.divider()
+    st.write('\nRemember to give us feedback!\n')
+    with st.form("student_feedback"):
+        st.write("Feedback")
+        name = st.text_input("Enter your name")
+        likert1 = st.slider("Ease of use", min_value=0, max_value=5, value=3)
+        likert2 = st.slider("Accuracy", min_value=0, max_value=5, value=3)
+        likert3 = st.slider("Overall", min_value=0, max_value=5, value=3)
+        
+        submitted = st.form_submit_button("Submit")
+        if submitted:
+            with open(f"./feedback/{name}_feedback.csv", "w") as f:
+                f.write(f"Name, Ease of use, Accuracy, Overall\n")
+                f.write(f"{name}, {likert1}, {likert2}, {likert3}\n")
+            
+        if os.path.exists(f"./feedback/{name}_feedback.csv"):
+            df = pd.read_csv(f"./feedback/{name}_feedback.csv")
+            st.dataframe(df)
