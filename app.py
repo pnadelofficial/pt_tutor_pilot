@@ -10,9 +10,6 @@ import utils
 
 st.title('Tufts Physical Therapy AI Tutor')
 
-        # if len(msgs.messages) == 0:
-        #     msgs.add_ai_message("Hello, I am Quizzer. Ask me about a subject and I'll quiz you on it!")
-
 hf = utils.prep_embeddings()
 model_choice = st.selectbox("What model would you like to use?", ["GPT3.5", "Falcon 7B", "Claude2 (TBD)"])
 doc_prompt = PromptTemplate(
