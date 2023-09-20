@@ -11,7 +11,7 @@ import utils
 st.title('Tufts Physical Therapy AI Tutor')
 
 hf = utils.prep_embeddings()
-model_choice = st.selectbox("What model would you like to use?", ["GPT3.5", "Falcon 7B", "Claude2 (TBD)"])
+model_choice = st.selectbox("What model would you like to use?", ["GPT3.5", "Falcon 7B (TBD)", "Claude2 (TBD)"])
 doc_prompt = PromptTemplate(
     template="Content: {page_content}\nSource: {source}",
     input_variables=["page_content", "source"]
