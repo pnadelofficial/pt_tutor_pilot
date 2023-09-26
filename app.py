@@ -30,8 +30,8 @@ if template_radio in prompt_dict:
 qa, memory = utils.prep_model(model_choice, qa_prompt, doc_prompt, db)
 msgs = StreamlitChatMessageHistory()
 
-st.sidebar.button("Clear message history")
-if len(msgs.messages) == 0 or st.sidebar.button("Clear message history"):
+clear_button = st.sidebar.button("Clear message history")
+if len(msgs.messages) == 0 or clear_button:
     msgs.clear()
     msgs.add_ai_message("How can I help you?")
 
