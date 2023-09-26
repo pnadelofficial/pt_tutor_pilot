@@ -1,11 +1,40 @@
 import streamlit as st
 import os
 import random
-import pandas as pd
+import json
+
+class SaveConversation:
+    def __init__(self, memory) -> None:
+        self.memory = memory
+        os.makedirs('./feedback/conversations/', exist_ok=True)
+
+    def make_json(self, id):
+        convo_list = []
+        messages = self.memory.messages
+        for i, msg in enumerate(messages):
+            if (i % 2 != 0) and (i+1 < len(messages)):
+                convo_list.append([msg, messages[i+1]])
+            elif (i+1 == len(messages)):
+                convo_list.append([msg])
+        
+        convo_json = []
+        for convo in convo_list:
+            convo_dict = {}
+            if len(convo) == 2:
+                convo_dict['AI'] = convo[0].content
+                convo_dict['Human'] = convo[1].content
+            else:
+                convo_dict['AI'] = convo[0].content
+                convo_dict['Human'] = ''
+            convo_json.append(convo_dict)
+        
+        with open(f"./feedback/conversations/{id}.json", "w") as f:
+            json.dump(convo_json, f)    
 
 class FeedbackSurvey:
-    def __init__(self) -> None:
-        pass
+    def __init__(self, memory) -> None:
+        self.memory = memory
+        self.sc = SaveConversation(self.memory)
 
     def make_survey(self):
         os.makedirs('./feedback', exist_ok=True)
@@ -37,7 +66,4 @@ class FeedbackSurvey:
                 with open(f"./feedback/{id}_feedback.csv", "w") as f:
                     f.write(f"ID, Q1, Q2, Q3, Q4, Q5, Q6, Q7, Q8, Q9, Q10, Q11, Q12, Q13, Q14\n")
                     f.write(f"{id}, {likert1}, {likert2}, {likert3}, {likert4}, {likert5}, {likert6}, {likert7}, {likert8}, {likert9}, {likert10}, {likert11}, {likert12}, {likert13}, {likert14}\n")
-                
-            # if os.path.exists(f"./feedback/{id}_feedback.csv"):
-            #     df = pd.read_csv(f"./feedback/{id}_feedback.csv")
-            #     st.dataframe(df)
+                self.sc.make_json(id)

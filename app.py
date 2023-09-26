@@ -11,7 +11,7 @@ import utils
 st.title('Tufts Physical Therapy AI Tutor')
 
 hf = utils.prep_embeddings()
-model_choice = st.selectbox("What model would you like to use?", ["GPT3.5", "Falcon 7B (TBD)", "Claude2 (TBD)"])
+model_choice = st.selectbox("What model would you like to use?", ["GPT 3.5", "GPT 4", ], help='Anthropic API access coming soon!')
 doc_prompt = PromptTemplate(
     template="Content: {page_content}\nSource: {source}",
     input_variables=["page_content", "source"]
@@ -67,10 +67,5 @@ if question := st.chat_input("Ask me anything!"):
 
 with st.sidebar:
     st.write('# **Remember to give us your feedback!**\n')
-    fs = FeedbackSurvey()
+    fs = FeedbackSurvey(msgs)
     fs.make_survey()
-
-# TODO
-## Save convo
-## Save feedback 
-## Both in some sqlite db
