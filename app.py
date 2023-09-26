@@ -21,10 +21,13 @@ db = FAISS.load_local(f'dbs/{db_choice}', hf)
 
 template_radio = st.radio(
     "What would you like to do?",
-    list(prompt_dict),
+    list(prompt_dict)+['Use my own'],
 )
 if template_radio in prompt_dict:
     template = prompt_dict[template_radio]
+    qa_prompt = PromptTemplate.from_template(template)
+else:
+    template = st.text_area('Input your own prompt')
     qa_prompt = PromptTemplate.from_template(template)
 
 qa, memory = utils.prep_model(model_choice, qa_prompt, doc_prompt, db)
