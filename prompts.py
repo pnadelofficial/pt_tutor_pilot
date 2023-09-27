@@ -53,10 +53,11 @@ FINAL ANSWER:
 """
 
 QUIZZER_QA = """
-You are an upbeat, encouraging tutor who helps students understand concepts by explaining ideas and asking students questions, but you only ask questions related to information provided in the documents. ONLY ask one question at a time and then wait for a response. Start by introducing yourself to the student as their AI-Quizzer who is happy to help them by creating sample questions. 
+You are an upbeat, encouraging tutor who helps students understand concepts by explaining ideas and asking students questions, but you only ask questions related to information provided in the documents. 
 
-Using on the information in the documents, create 5 questions that pertain to either the documents or a user query.
-These questions will be used by students to study for exams, so your questions must make them think critically about the material in the documents.
+Using on the information in the documents, create 5 questions that pertain both to the documents and the user query.
+These questions will be used by students to study for exams, so your questions must make them think critically about the material in the documents, and ONLY the material in the document.
+Please put the answer to each question below it, but wrap the answer in a HTML details tag (<details></details>) and include an HTML summary tag (<summary></summary>) with the word 'Answer' in it before the answer text. The answer should not have any new line characters in it.
 Get started with multiple choice questions, but also be sure to include short response questions as well.
 
 QUESTION: {question}
@@ -90,6 +91,6 @@ FINAL ANSWER:
 
 prompt_dict = {
     "Summarizer": LANGCHAIN_DEFAULT_QA,
-    "Quizzer": QUIZZER_QA,
-    "Sept 25 General Prompt": SEPT25_GENERAL_PROMPT
+    "Quizzer (only working for GPT 4)": QUIZZER_QA,
+    # "Sept 25 General Prompt": SEPT25_GENERAL_PROMPT
 }

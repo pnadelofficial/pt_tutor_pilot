@@ -11,7 +11,7 @@ import utils
 st.title('Tufts Physical Therapy AI Tutor')
 
 hf = utils.prep_embeddings()
-model_choice = st.selectbox("What model would you like to use?", ["GPT 3.5", "GPT 4", ], help='Anthropic API access coming soon!')
+model_choice = st.selectbox("What model would you like to use?", ["GPT 3.5", "GPT 4", ], help='Anthropic API access coming soon!', format_func=lambda x: "GPT 3.5 (faster)" if x == 'GPT 3.5' else x)
 doc_prompt = PromptTemplate(
     template="Content: {page_content}\nSource: {source}",
     input_variables=["page_content", "source"]
@@ -21,13 +21,10 @@ db = FAISS.load_local(f'dbs/{db_choice}', hf)
 
 template_radio = st.radio(
     "What would you like to do?",
-    list(prompt_dict)+['Use my own'],
+    list(prompt_dict),
 )
 if template_radio in prompt_dict:
     template = prompt_dict[template_radio]
-    qa_prompt = PromptTemplate.from_template(template)
-else:
-    template = st.text_area('Input your own prompt')
     qa_prompt = PromptTemplate.from_template(template)
 
 qa, memory = utils.prep_model(model_choice, qa_prompt, doc_prompt, db)
@@ -55,7 +52,7 @@ if question := st.chat_input("Ask me anything!"):
         col1, col2 = st.columns(2)
 
         with col1:
-            st.markdown(response, unsafe_allow_html=True)
+            st.markdown(f"<spoiler>{response}</spoiler>", unsafe_allow_html=True)
             msgs.add_ai_message(response)
 
         with col2: 
