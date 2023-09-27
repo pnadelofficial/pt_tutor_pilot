@@ -3,7 +3,7 @@ from langchain.embeddings import HuggingFaceBgeEmbeddings
 from langchain.memory import ConversationBufferWindowMemory
 from langchain.chains import RetrievalQAWithSourcesChain
 from langchain.chains.qa_with_sources.loading import load_qa_with_sources_chain
-from langchain.chat_models import ChatOpenAI
+from langchain.chat_models import ChatOpenAI, ChatAnthropic
 from langchain.callbacks.base import BaseCallbackHandler
 import os
 import re
@@ -18,7 +18,7 @@ def prep_embeddings():
 
 @st.cache_resource
 def prep_model(choice, _qa_prompt, _doc_prompt, _db):
-    if choice.startswith('GPT'):
+    if choice == 'GPT 3.5':
         llm = ChatOpenAI(temperature=0, model_name='gpt-3.5-turbo-16k-0613', openai_api_key=st.secrets["open_ai_key"], streaming=True) 
         qa_chain = load_qa_with_sources_chain(
             llm, chain_type='stuff',
@@ -31,6 +31,33 @@ def prep_model(choice, _qa_prompt, _doc_prompt, _db):
             reduce_k_below_max_tokens=True, return_source_documents=True,
             memory=memory
         )
+    elif choice == 'GPT 4':
+        llm = ChatOpenAI(temperature=0, model_name='gpt-4', openai_api_key=st.secrets["open_ai_key"], streaming=True) 
+        qa_chain = load_qa_with_sources_chain(
+            llm, chain_type='stuff',
+            prompt=_qa_prompt,
+            document_prompt=_doc_prompt
+        )
+        memory = ConversationBufferWindowMemory(memory_key="chat_history", return_messages=True, input_key='question', output_key='answer', k=15)
+        qa = RetrievalQAWithSourcesChain(
+            combine_documents_chain=qa_chain, retriever=_db.as_retriever(),
+            reduce_k_below_max_tokens=True, return_source_documents=True,
+            memory=memory
+        )
+    # REQUESTED ANTHROPIC API ACCESS
+    # else:
+    #     llm = ChatAnthropic(temperature=0, model_name='', anthropic_api_key=st.secrets["anthropic_ai_key"], streaming=True) 
+    #     qa_chain = load_qa_with_sources_chain(
+    #         llm, chain_type='stuff',
+    #         prompt=_qa_prompt,
+    #         document_prompt=_doc_prompt
+    #     )
+    #     memory = ConversationBufferWindowMemory(memory_key="chat_history", return_messages=True, input_key='question', output_key='answer', k=15)
+    #     qa = RetrievalQAWithSourcesChain(
+    #         combine_documents_chain=qa_chain, retriever=_db.as_retriever(),
+    #         reduce_k_below_max_tokens=True, return_source_documents=True,
+    #         memory=memory
+    #     )
     return qa, memory
 
 def format_names(name):
