@@ -1,3 +1,4 @@
 /data/
 /feedback/
 /.streamlit/
+__pycache__/*.cpython-*.pyc
