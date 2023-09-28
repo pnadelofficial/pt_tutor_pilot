@@ -16,7 +16,9 @@ doc_prompt = PromptTemplate(
     template="Content: {page_content}\nSource: {source}",
     input_variables=["page_content", "source"]
 )
-db_choice = st.selectbox("What week's material would you like to search?", os.listdir('./dbs'), format_func=utils.format_names)
+
+msgs = StreamlitChatMessageHistory()
+db_choice = st.selectbox("What week's material would you like to search?", os.listdir('./dbs'), format_func=utils.format_names, on_change=msgs.clear)
 db = FAISS.load_local(f'dbs/{db_choice}', hf)
 
 template_radio = st.radio(
@@ -28,7 +30,6 @@ if template_radio in prompt_dict:
     qa_prompt = PromptTemplate.from_template(template)
 
 qa, memory = utils.prep_model(model_choice, qa_prompt, doc_prompt, db)
-msgs = StreamlitChatMessageHistory()
 
 clear_button = st.sidebar.button("Clear message history")
 if len(msgs.messages) == 0 or clear_button:
