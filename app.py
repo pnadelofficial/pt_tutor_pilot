@@ -46,7 +46,7 @@ if template_radio == 'Summarizer':
 elif template_radio == 'Quizzer':
     question = "Quiz me on these documents."
 
-gen_button = st.button('(Re)generate Response')
+gen_button = st.button('Generate Response')
 
 if question and gen_button:
     # st.chat_message("user").write(question)
