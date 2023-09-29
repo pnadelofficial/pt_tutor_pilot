@@ -11,7 +11,8 @@ import utils
 st.title('Tufts Physical Therapy AI Tutor')
 
 hf = utils.prep_embeddings()
-model_choice = st.selectbox("What model would you like to use?", ["GPT 3.5", "GPT 4", ], help='Anthropic API access coming soon!', format_func=lambda x: "GPT 3.5 (faster)" if x == 'GPT 3.5' else x)
+# model_choice = st.selectbox("What model would you like to use?", ["GPT 3.5", "GPT 4", ], help='Anthropic API access coming soon!', format_func=lambda x: "GPT 3.5 (faster)" if x == 'GPT 3.5' else x)
+model_choice = "GPT 4"
 doc_prompt = PromptTemplate(
     template="Content: {page_content}\nSource: {source}",
     input_variables=["page_content", "source"]
@@ -40,8 +41,15 @@ avatars = {"human": "user", "ai": "assistant"}
 for msg in msgs.messages:
     st.chat_message(avatars[msg.type]).write(msg.content)
 
-if question := st.chat_input("Ask me anything!"):
-    st.chat_message("user").write(question)
+if template_radio == 'Summarizer':
+    question = "Using only information from the attached document, summarize key information from the document, highlighting main ideas and connections."
+elif template_radio == 'Quizzer':
+    question = "Quiz me on these documents."
+
+gen_button = st.button('(Re)generate Response')
+
+if question and gen_button:
+    # st.chat_message("user").write(question)
     msgs.add_user_message(question)
 
     with st.chat_message("assistant"):

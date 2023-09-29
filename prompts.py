@@ -93,6 +93,12 @@ FINAL ANSWER:
 
 prompt_dict = {
     "Summarizer": LANGCHAIN_DEFAULT_QA,
-    "Quizzer (only working for GPT 4)": QUIZZER_QA,
+    "Quizzer": QUIZZER_QA,
     # "Sept 25 General Prompt": SEPT25_GENERAL_PROMPT
 }
+
+
+# PRE LOADING HUMAN MESSAGE: 
+## Using only information from the attached document, summarize key information from the document, highlighting main ideas and connections.
+
+# GET RID OF INPUT, give regenerate response button

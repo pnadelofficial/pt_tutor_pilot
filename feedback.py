@@ -60,10 +60,11 @@ class FeedbackSurvey:
             likert12 = st.slider("12. I am satisfied with the features and functionality of the PT Tutor application.", min_value=1, max_value=5, value=3)
             likert13 = st.slider("13. I would recommend the PT Tutor application to other students.", min_value=1, max_value=5, value=3)
             likert14 = st.slider("14. I will continue to use the PT Tutor application in the future.", min_value=1, max_value=5, value=3)
+            fr = st.text_area("(Optional) Please give any general feedback you might have.")
         
             submitted = st.form_submit_button("Submit")
             if submitted:
                 with open(f"./feedback/{id}_feedback.csv", "w") as f:
                     f.write(f"ID, Q1, Q2, Q3, Q4, Q5, Q6, Q7, Q8, Q9, Q10, Q11, Q12, Q13, Q14\n")
-                    f.write(f"{id}, {likert1}, {likert2}, {likert3}, {likert4}, {likert5}, {likert6}, {likert7}, {likert8}, {likert9}, {likert10}, {likert11}, {likert12}, {likert13}, {likert14}\n")
+                    f.write(f"{id}, {likert1}, {likert2}, {likert3}, {likert4}, {likert5}, {likert6}, {likert7}, {likert8}, {likert9}, {likert10}, {likert11}, {likert12}, {likert13}, {likert14}, {fr}\n")
                 self.sc.make_json(id)
