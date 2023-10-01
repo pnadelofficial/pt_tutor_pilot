@@ -2,6 +2,7 @@ import streamlit as st
 import os
 import random
 import json
+import subprocess
 
 class SaveConversation:
     def __init__(self, memory) -> None:
@@ -68,3 +69,7 @@ class FeedbackSurvey:
                     f.write(f"ID, Q1, Q2, Q3, Q4, Q5, Q6, Q7, Q8, Q9, Q10, Q11, Q12, Q13, Q14\n")
                     f.write(f"{id}, {likert1}, {likert2}, {likert3}, {likert4}, {likert5}, {likert6}, {likert7}, {likert8}, {likert9}, {likert10}, {likert11}, {likert12}, {likert13}, {likert14}, {fr}\n")
                 self.sc.make_json(id)
+                
+        subprocess.call(['git', 'add', '.'])
+        subprocess.call(['git', 'commit', '-m', f'feedback{id}'])
+        subprocess.call(['git', 'push'])
