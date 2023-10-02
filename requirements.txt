@@ -7,3 +7,4 @@ FlagEmbedding
 sentence_transformers
 faiss-cpu
 gspread
+google
