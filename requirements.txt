@@ -6,3 +6,4 @@ tiktoken
 FlagEmbedding
 sentence_transformers
 faiss-cpu
+gspread
