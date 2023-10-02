@@ -1,41 +1,47 @@
 import streamlit as st
 import os
 import random
-import json
-import subprocess
+import gspread
+from google.oauth2.service_account import Credentials
 
-class SaveConversation:
-    def __init__(self, memory) -> None:
-        self.memory = memory
-        os.makedirs('./feedback/conversations/', exist_ok=True)
+CREDS = st.secrets['gsp_secrets']['my_project_settings']
 
-    def make_json(self, id):
-        convo_list = []
-        messages = self.memory.messages
-        for i, msg in enumerate(messages):
-            if (i % 2 != 0) and (i+1 < len(messages)):
-                convo_list.append([msg, messages[i+1]])
-            elif (i+1 == len(messages)):
-                convo_list.append([msg])
+# WILL COME BACK WHEN REENABLE CHAT
+# class SaveConversation:
+#     def __init__(self, memory) -> None:
+#         self.memory = memory
+#         os.makedirs('./feedback/conversations/', exist_ok=True)
+#         self.gc = gspread.service_account_from_dict(CREDS)
+#         self.fb = self.gc.open('pt-tutor-feedback').get_worksheet(1)
+
+#     def make_json(self, id):
+#         convo_list = []
+#         messages = self.memory.messages
+#         for i, msg in enumerate(messages):
+#             if (i % 2 != 0) and (i+1 < len(messages)):
+#                 convo_list.append([msg, messages[i+1]])
+#             elif (i+1 == len(messages)):
+#                 convo_list.append([msg])
         
-        convo_json = []
-        for convo in convo_list:
-            convo_dict = {}
-            if len(convo) == 2:
-                convo_dict['AI'] = convo[0].content
-                convo_dict['Human'] = convo[1].content
-            else:
-                convo_dict['AI'] = convo[0].content
-                convo_dict['Human'] = ''
-            convo_json.append(convo_dict)
+#         convo_json = []
+#         for convo in convo_list:
+#             convo_dict = {}
+#             if len(convo) == 2:
+#                 convo_dict['AI'] = convo[0].content
+#                 convo_dict['Human'] = convo[1].content
+#             else:
+#                 convo_dict['AI'] = convo[0].content
+#                 convo_dict['Human'] = ''
+#             convo_json.append(convo_dict)
         
-        with open(f"./feedback/conversations/{id}.json", "w") as f:
-            json.dump(convo_json, f)    
+#         self.fb.append_rows([id, str(convo_json)], table_range="A1:B1")
 
 class FeedbackSurvey:
     def __init__(self, memory) -> None:
         self.memory = memory
-        self.sc = SaveConversation(self.memory)
+        # self.sc = SaveConversation(self.memory)
+        self.gc = gspread.service_account_from_dict(CREDS)
+        self.fb = self.gc.open('pt-tutor-feedback').sheet1
 
     def make_survey(self):
         os.makedirs('./feedback', exist_ok=True)
@@ -65,11 +71,5 @@ class FeedbackSurvey:
         
             submitted = st.form_submit_button("Submit")
             if submitted:
-                with open(f"./feedback/{id}_feedback.csv", "w") as f:
-                    f.write(f"ID, Q1, Q2, Q3, Q4, Q5, Q6, Q7, Q8, Q9, Q10, Q11, Q12, Q13, Q14\n")
-                    f.write(f"{id}, {likert1}, {likert2}, {likert3}, {likert4}, {likert5}, {likert6}, {likert7}, {likert8}, {likert9}, {likert10}, {likert11}, {likert12}, {likert13}, {likert14}, {fr}\n")
+                self.fb.append_row([likert1, likert2, likert3, likert4, likert5, likert6, likert7, likert8, likert9, likert10, likert11, likert12, likert13, likert14, fr], table_range="A1:P1")
                 self.sc.make_json(id)
-                
-        subprocess.call(['git', 'add', '.'])
-        subprocess.call(['git', 'commit', '-m', f'feedback{id}'])
-        subprocess.call(['git', 'push'])

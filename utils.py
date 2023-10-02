@@ -18,7 +18,7 @@ def prep_embeddings():
 
 def prep_model(choice, _qa_prompt, _doc_prompt, _db):
     if choice == 'GPT 3.5':
-        llm = ChatOpenAI(temperature=0, model_name='gpt-3.5-turbo-16k-0613', openai_api_key=st.secrets["open_ai_key"], streaming=True) 
+        llm = ChatOpenAI(temperature=0, model_name='gpt-3.5-turbo-16k-0613', openai_api_key=st.secrets['openai']["open_ai_key"], streaming=True) 
         qa_chain = load_qa_with_sources_chain(
             llm, chain_type='stuff',
             prompt=_qa_prompt,
@@ -31,7 +31,7 @@ def prep_model(choice, _qa_prompt, _doc_prompt, _db):
             memory=memory
         )
     elif choice == 'GPT 4':
-        llm = ChatOpenAI(temperature=0, model_name='gpt-4', openai_api_key=st.secrets["open_ai_key"], streaming=True) 
+        llm = ChatOpenAI(temperature=0, model_name='gpt-4', openai_api_key=st.secrets['openai']["open_ai_key"], streaming=True) 
         qa_chain = load_qa_with_sources_chain(
             llm, chain_type='stuff',
             prompt=_qa_prompt,

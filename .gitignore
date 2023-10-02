@@ -3,3 +3,4 @@
 /.streamlit/
 __pycache__/*.cpython-*.pyc
 __pycache__/
+*.json
