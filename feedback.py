@@ -72,4 +72,5 @@ class FeedbackSurvey:
             submitted = st.form_submit_button("Submit")
             if submitted:
                 self.fb.append_row([id, likert1, likert2, likert3, likert4, likert5, likert6, likert7, likert8, likert9, likert10, likert11, likert12, likert13, likert14, fr], table_range="A1:Q1")
+                st.success(f'Thank for your feedback. Screenshot this for extra credit. ID: {id}')
                 # self.sc.make_json(id)
