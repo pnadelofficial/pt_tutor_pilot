@@ -102,3 +102,17 @@ prompt_dict = {
 ## Using only information from the attached document, summarize key information from the document, highlighting main ideas and connections.
 
 # GET RID OF INPUT, give regenerate response button
+
+## FROM STEVEN MOORE
+### 1 
+# Create 10 Multiple Choice Questions (MCQs) where the learning objective is to "{learning_objective}" based on following rules:
+# 1. Each MCQ has 3 options of similar length
+# 2. Write questions where only one option is correct and the other two are distractors
+# 3. Don't use all, both, or none of the options as choices
+# 4. Write feedback for every option on if it is correct or incorrect and why
+# 5. Use concrete examples instead of just abstract descriptions
+
+### 2
+# create a why, what, when or how type question for each concept in list using the xml content: Concepts: {concepts}  Content: {xml}
+# Where the concepts are learning objectives, skills, or parts of a knowledge graph they generated from something such as an online course or textbook.
+

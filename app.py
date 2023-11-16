@@ -41,15 +41,16 @@ avatars = {"human": "user", "ai": "assistant"}
 for msg in msgs.messages:
     st.chat_message(avatars[msg.type]).write(msg.content)
 
-if template_radio == 'Summarizer':
-    question = "Using only information from the attached document, summarize key information from the document, highlighting main ideas and connections."
-elif template_radio == 'Quizzer':
-    question = "Quiz me on these documents."
+# if template_radio == 'Summarizer':
+#     question = "Using only information from the attached document, summarize key information from the document, highlighting main ideas and connections."
+# elif template_radio == 'Quizzer':
+#     question = "Quiz me on these documents."
 
-gen_button = st.button('Generate Response')
+# gen_button = st.button('Generate Response')
 
-if question and gen_button:
-    # st.chat_message("user").write(question)
+#if question and gen_button:
+if question := st.chat_input("Ask me anything!"):
+    st.chat_message("user").write(question)
     msgs.add_user_message(question)
 
     with st.chat_message("assistant"):
