@@ -2,3 +2,5 @@
 /feedback/
 /.streamlit/
 __pycache__/*.cpython-*.pyc
+*.json
+/medmcqa_data/
