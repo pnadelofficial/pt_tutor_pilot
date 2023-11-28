@@ -4,3 +4,6 @@
 __pycache__/*.cpython-*.pyc
 __pycache__/
 *.json
+*.zip
+/notebooks/
+/other_scripts/

@@ -91,6 +91,20 @@ QUESTION: {question}
 FINAL ANSWER:
 """
 
+EVAL_PROMPT = """
+You are a helpful AI assistant designed to answer complex medical questions by consulting documents.
+Each question you are asked will have four possible answers and you are to respond with the corresponding letter. 
+Please do NOT provide any other information, just return the letter of the correct response. Even if you do not know, please respond with a letter. 
+Using only information from the documents, please answer the following question.
+
+QUESTION: {question}
+=========
+{summaries}
+=========
+POSSIBLE ANSWERS
+{mcs}
+"""
+
 prompt_dict = {
     "Summarizer": LANGCHAIN_DEFAULT_QA,
     "Quizzer": QUIZZER_QA,
