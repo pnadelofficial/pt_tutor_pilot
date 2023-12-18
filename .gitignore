@@ -4,3 +4,4 @@
 __pycache__/*.cpython-*.pyc
 *.json
 /medmcqa_data/
+*.ipynb

@@ -1,72 +1,91 @@
 import streamlit as st
-from langchain.vectorstores import FAISS
 from langchain.memory.chat_message_histories import StreamlitChatMessageHistory
-from langchain.prompts import PromptTemplate
-import os
-import pandas as pd
-from prompts import prompt_dict
-from feedback import FeedbackSurvey
-import utils
+from llama_index.indices.vector_store import VectorStoreIndex
+import psycopg
+from pgvector.psycopg import register_vector
+from llama_index import Document
+from llama_index.llms.llama_cpp import LlamaCPP
+from llama_index import set_global_service_context
+from llama_index.embeddings import resolve_embed_model
+from llama_index import ServiceContext
+from llama_index.retrievers import QueryFusionRetriever
+from llama_index.query_engine import RetrieverQueryEngine
+from llama_index.llama_pack import download_llama_pack
 
-st.title('Tufts Physical Therapy AI Tutor')
+st.title("PT Tutor App")
 
-hf = utils.prep_embeddings()
-model_choice = st.selectbox("What model would you like to use?", ["GPT 3.5", "GPT 4", ], help='Anthropic API access coming soon!')
-doc_prompt = PromptTemplate(
-    template="Content: {page_content}\nSource: {source}",
-    input_variables=["page_content", "source"]
+@st.cache_resource
+def get_index(llm='local'):
+    db_name = "postgres"
+    conn = psycopg.connect(dbname=db_name, host = "localhost", port = "5432", autocommit=True)
+    conn.execute('CREATE EXTENSION IF NOT EXISTS vector')
+    register_vector(conn)
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM documents;")
+    rows = cursor.fetchall()
+    docs_from_db = [Document(text=row[2],metadata={'source':row[1]},embedding=list(row[3])) for row in rows]
+    
+    if llm == 'openai': 
+        index = VectorStoreIndex.from_documents(docs_from_db)
+        return index
+    else: 
+        llm = LlamaCPP(model_path='/Volumes/T7 Shield/text-generation-webui/models/mistral-7b-instruct-v0.1.Q4_K_M.gguf', temperature=.5)
+        embed_model = resolve_embed_model("local:BAAI/bge-large-en")       
+        service_context = ServiceContext.from_defaults(embed_model=embed_model, llm=llm)
+        set_global_service_context(service_context)
+        index = VectorStoreIndex.from_documents(docs_from_db)
+        return index, service_context, llm
+
+index, service_context, llm = get_index()
+set_global_service_context(service_context)
+
+## FUZZY CITATION AND QUERY REWRITE
+vector_retriever = index.as_retriever(similarity_top_k=5)
+fusion_retriever = QueryFusionRetriever(
+    [vector_retriever],
+    similarity_top_k=5,
+    num_queries=6,  # set this to 1 to disable query generation
+    mode="reciprocal_rerank",
+    use_async=False,
+    verbose=True,
+    llm=llm
+    # query_gen_prompt="...",  # we could override the query generation prompt here
 )
-db_choice = st.selectbox("What week's material would you like to search?", os.listdir('./dbs'), format_func=utils.format_names)
-db = FAISS.load_local(f'dbs/{db_choice}', hf)
+query_engine = RetrieverQueryEngine.from_args(fusion_retriever)
+FuzzyCitationEnginePack = download_llama_pack("FuzzyCitationEnginePack", "./fuzzy_pack")
+fuzzy_engine_pack = FuzzyCitationEnginePack(query_engine, threshold=50)
 
-template_radio = st.radio(
-    "What would you like to do?",
-    list(prompt_dict)+['Use my own'],
-)
-if template_radio in prompt_dict:
-    template = prompt_dict[template_radio]
-    qa_prompt = PromptTemplate.from_template(template)
-else:
-    template = st.text_area('Input your own prompt')
-    qa_prompt = PromptTemplate.from_template(template)
-
-qa, memory = utils.prep_model(model_choice, qa_prompt, doc_prompt, db)
 msgs = StreamlitChatMessageHistory()
-
-clear_button = st.sidebar.button("Clear message history")
-if len(msgs.messages) == 0 or clear_button:
-    msgs.clear()
-    msgs.add_ai_message("How can I help you?")
-
-avatars = {"human": "user", "ai": "assistant"}
-for msg in msgs.messages:
-    st.chat_message(avatars[msg.type]).write(msg.content)
 
 if question := st.chat_input("Ask me anything!"):
     st.chat_message("user").write(question)
     msgs.add_user_message(question)
 
     with st.chat_message("assistant"):
-        with st.spinner('Thinking...'):
-            result = qa({"question":question, "chat_history":memory.chat_memory})
-        response = result['answer']
-        cites = result['source_documents']
+        with st.spinner("Thinking..."):
+            result = fuzzy_engine_pack.run(question) #query_engine.query(question)
+        response = str(result)
+        cites = result.source_nodes
 
         col1, col2 = st.columns(2)
 
         with col1:
             st.markdown(response, unsafe_allow_html=True)
             msgs.add_ai_message(response)
-
-        with col2: 
+        
+        with col2:
             with st.expander("**Citations**"):
-                cite_df = pd.DataFrame(cites)
-                cites_meta = list(zip(list(c[1] for c in cite_df.drop_duplicates(subset=0)[0]), list(c[1] for c in cite_df.drop_duplicates(subset=0)[1])))
-                for cite in cites_meta:
-                    st.markdown(f"*{cite[1]['source'].split('.pdf')[0]}*")
-                    st.markdown(utils.clean_cite(cite[0]), unsafe_allow_html=True)           
-
-with st.sidebar:
-    st.write('# **Remember to give us your feedback!**\n')
-    fs = FeedbackSurvey(msgs)
-    fs.make_survey()
+                cites = [(c.metadata['source'], c.text) for c in cites]
+                node_chunks = [node_chunk for _, node_chunk in result.metadata.keys()]
+                for title, cite in cites:
+                    for node_chunk in node_chunks:
+                        if node_chunk in cite:
+                            start_idx = cite.find(node_chunk)
+                            end_idx = start_idx + len(node_chunk)
+                            cite = f"""
+                            <p>
+                                {cite[:start_idx]}<mark style='background-color:#fdd835'>{cite[start_idx:end_idx]}</mark>{cite[end_idx:]}
+                            </p>
+                            """
+                    st.markdown(f"*{title}*")
+                    st.markdown(cite, unsafe_allow_html=True)
